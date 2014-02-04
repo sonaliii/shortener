@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'active_record'
 require 'pry'
+require 'securerandom'
 
 ###########################################################
 # Configuration
@@ -13,6 +14,8 @@ configure :development, :production do
        :adapter => 'sqlite3',
        :database =>  'db/dev.sqlite3.db'
      )
+    ActiveRecord::Migration.verbose = true
+    ActiveRecord::Migrator.migrate("db/migrate")
 end
 
 # Handle potential connection pool timeout issues
@@ -30,12 +33,17 @@ end
 class Link < ActiveRecord::Base
 end
 
+
 ###########################################################
 # Routes
 ###########################################################
 
 get '/' do
-    @links = [] # FIXME
+    @links = Link.find :all # FIXME
+    # a = Link.find :all
+    # for x in a do
+    # 	x.destroy
+    # end
     erb :index
 end
 
@@ -43,8 +51,23 @@ get '/new' do
     erb :form
 end
 
+get '/:code' do
+	code = params[:code]
+	link = Link.where(code: code).first
+	redirect to('http://#{link.url}')
+
+end
+
 post '/new' do
-    # PUT CODE HERE TO CREATE NEW SHORTENED LINKS
+	allLinks = Link.find :all
+	for i in allLinks do
+		if i.url == params[:url]
+			return i.code		
+		end
+	end
+	randomCode = SecureRandom.hex(3)
+	Link.create(url: params[:url], code: randomCode)
+	randomCode
 end
 
 # MORE ROUTES GO HERE

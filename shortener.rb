@@ -31,6 +31,7 @@ end
 # http://guides.rubyonrails.org/association_basics.html
 
 class Link < ActiveRecord::Base
+	attr_accessible :url, :code
 end
 
 
@@ -54,7 +55,7 @@ end
 get '/:code' do
 	code = params[:code]
 	link = Link.where(code: code).first
-	redirect to('http://#{link.url}')
+	redirect 'http://' + link.url
 
 end
 
